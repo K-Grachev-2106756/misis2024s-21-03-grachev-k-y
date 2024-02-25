@@ -1,5 +1,4 @@
 #include "ReportCreator.h"
-#include <windows.h>
 
 
 

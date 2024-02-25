@@ -34,11 +34,6 @@ int main(int argc, char** argv) {
     int h = parser.get<int>("h");
     double gamma = parser.get<double>("gamma");
 
-    std::cout<< imageName << std::endl;
-    std::cout<< s << std::endl;
-    std::cout<< h << std::endl;
-    std::cout<< gamma << std::endl;
-
     // Creating an image matrix
     cv::Mat1b img(2 * h, 256 * s, 1);
 
