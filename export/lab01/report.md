@@ -1,4 +1,12 @@
-#include <iostream>
+# Report for lab01
+## Task:
+1. write a console application to generate a single-channel 8bpp image with a "gradient fill"(from 0 to 255, from rectangles s-width, h-height) and gamma-corrected fill
+2. strips are arranged on top of each other
+3. gamma correction is executed as a function
+4. the name of the output file is specified as an optional parameter (without a key) if this parameter is not set, then just show the result on the screen and close the application by pressing any key
+5. get the s, h, gamma parameters from the command line parameters, if the keys are not specified, then use the defaults (s=3, h=30, gamma=2.4)
+## Code:
+```#include <iostream>
 #include <opencv2/opencv.hpp>
 #include <ReportCreator.h>
 
@@ -70,3 +78,8 @@ int main(int argc, char** argv) {
     cv::imshow(imageName, img);
     cv::waitKey(0);
 }
+```
+## Results:
+![default.png](default.png)
+![gamma.png](gamma.png)
+![width.png](width.png)
