@@ -75,6 +75,6 @@ int main(int argc, char** argv) {
 }
 ```
 ## Results:
-!["default.png"]("default.png")
-!["gamma.png"]("gamma.png")
-!["width.png"]("width.png")
+!["default.png"](default.png)
+!["gamma.png"](gamma.png)
+!["width.png"](width.png)
