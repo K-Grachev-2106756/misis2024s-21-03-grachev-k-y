@@ -4,7 +4,6 @@
 
 
 void ReportCreator(const std::string& labName, const std::string& taskText) {
-
     std::string exportPath = "../export/" + labName;
 
     // Opening .cpp file
@@ -34,22 +33,21 @@ void ReportCreator(const std::string& labName, const std::string& taskText) {
     report << "```" << std::endl;
 
     // Searching for images in export folder
-    std::vector<std::string> pngFiles;
-    std::string searchPath = exportPath + "\\*.png";
-    WIN32_FIND_DATA findData;
-    HANDLE findHandle = FindFirstFile(searchPath.c_str(), &findData);
-    if (findHandle != INVALID_HANDLE_VALUE) {
-        do {
-            if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-                pngFiles.push_back(findData.cFileName);
-            }
-        } while (FindNextFile(findHandle, &findData) != 0);
-        FindClose(findHandle);
+    std::vector<std::filesystem::path> pngFiles;
+    try {
+        for (const auto& entry : std::filesystem::directory_iterator(exportPath)) {
+            if (entry.path().extension() == ".png") {
+                pngFiles.push_back(entry.path().filename());
+            }            
+        } 
+    } 
+    catch (const std::exception& ex) {
+        std::cerr << "Ошибка: " << ex.what() << std::endl;
     }
 
     // Writing md-structure for image displaying
     report << "## Results:\n";
     for (const auto& name : pngFiles) { 
         report << "![" << name << "](" << name << ")" << std::endl;
-    }
+    }     
 }

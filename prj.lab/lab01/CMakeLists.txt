@@ -1,7 +1,3 @@
 add_executable(lab01 lab01.cpp)
 
-if (NOT WIN32)
-    target_link_libraries(lab01 PRIVATE opencv_core opencv_imgproc opencv_highgui)
-else()
-    target_link_libraries(lab01 PRIVATE opencv_core opencv_imgproc opencv_highgui ReportCreator)
-endif()
+target_link_libraries(lab01 PRIVATE opencv_core opencv_imgproc opencv_highgui ReportCreator)

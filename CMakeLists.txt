@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.20)
 
 project(grachev-k-y)
 
+set(CMAKE_CXX_STANDARD 17)
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "cmake")
 
@@ -16,6 +18,4 @@ find_package(OpenCV CONFIG REQUIRED)
 add_subdirectory(prj.lab)
 
 # ReportCreator is available only for Windows
-if (WIN32)
-    add_subdirectory(ReportCreator)
-endif()
+add_subdirectory(ReportCreator)
