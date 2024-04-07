@@ -1,4 +1,11 @@
-#include <iostream>
+# Report for lab03
+## Task:
+1. write a function for auto-contrast by quantiles of black and white
+2. write functions for auto-contrasting a color image (channel-by-channel and jointly)
+3. arrange it in the form of a console application (the type of input image is determined automatically)
+
+## Code:
+```#include <iostream>
 #include <vector>
 #include <opencv2/opencv.hpp>
 #include <ReportCreator.h>
@@ -174,3 +181,18 @@ int main(int argc, char* argv[]) {
     "2. write functions for auto-contrasting a color image (channel-by-channel and jointly)\n"
     "3. arrange it in the form of a console application (the type of input image is determined automatically)\n");
 }
+```
+## Results:
+!["11orig.png"](11orig.png)
+!["12scaled.png"](12scaled.png)
+!["13scaledhist.png"](13scaledhist.png)
+!["14gen.png"](14gen.png)
+!["15genhist.png"](15genhist.png)
+!["21orig.png"](21orig.png)
+!["22scaled.png"](22scaled.png)
+!["23scaledhist.png"](23scaledhist.png)
+!["24gen.png"](24gen.png)
+!["25genhist.png"](25genhist.png)
+!["31orig.png"](31orig.png)
+!["32scaled.png"](32scaled.png)
+!["33scaledhist.png"](33scaledhist.png)
