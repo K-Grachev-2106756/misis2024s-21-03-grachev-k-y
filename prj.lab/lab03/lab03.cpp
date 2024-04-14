@@ -4,13 +4,14 @@
 #include <ReportCreator.h>
 #include <filesystem>
 
-namespace fs = std::filesystem;
+
 
 
 // Check if the img is monochromatic
 bool isGrayscale(const cv::Mat& img) {
     if (img.channels() == 1) 
         return true;
+
     for (int i = 0; i < img.rows; i++) {
         for (int j = 0; j < img.cols; j++) {
             cv::Vec3b pixel = img.at<cv::Vec3b>(i, j);
@@ -18,8 +19,10 @@ bool isGrayscale(const cv::Mat& img) {
                 return false; 
         }
     }
+
     return true;
 }
+
 
 // Returns histogram for channel
 cv::Mat calcHist(const cv::Mat& img) {
@@ -29,8 +32,10 @@ cv::Mat calcHist(const cv::Mat& img) {
     const float* histRange = {range};
     bool uniform = true, accumulate = false;
     cv::calcHist(&img, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, uniform, accumulate);
+
     return hist;
 }
+
 
 // Returns img of the histogram
 cv::Mat drawHist(cv::Mat hist) {
@@ -39,14 +44,17 @@ cv::Mat drawHist(cv::Mat hist) {
     for (int i = 0; i < 256; i++) {
         cv::line(histImage, cv::Point(i, 255), cv::Point(i, 255 - cvRound(hist.at<float>(i))), cv::Scalar(0), 1);
     }
+
     return histImage;
 }
+
 
 // Returns levels of white and black
 std::pair<int, int> calcQuantiles(const cv::Mat& hist, double quantile) {
     std::pair<int, int> quantiles = {0, 0};
     int pixCount = cv::sum(hist)[0];
     double cumulativeSum = 0;
+
     for (int i = 0; i < hist.size().height; i++) {
         cumulativeSum += hist.at<float>(i);   
         if (cumulativeSum  >= (quantile * pixCount)) {
@@ -54,6 +62,7 @@ std::pair<int, int> calcQuantiles(const cv::Mat& hist, double quantile) {
             break;
         }
     }
+
     cumulativeSum = 0;
     for (int i = hist.size().height - 1; i >= 0; i--) {
         cumulativeSum += hist.at<float>(i);
@@ -62,15 +71,19 @@ std::pair<int, int> calcQuantiles(const cv::Mat& hist, double quantile) {
             break;
         }
     }
+
     return quantiles;
 }
+
 
 // Returns new level for pixel
 int calculateNewLevel(int c_low, int c_high, int blackQuantile, int whiteQuantile, int currentValue) {
     if (currentValue <= blackQuantile) return blackQuantile;
     if (currentValue >= whiteQuantile) return whiteQuantile;
+
     return c_low + (currentValue - blackQuantile) * (c_high - c_low) / (whiteQuantile - blackQuantile);
 }
+
 
 // Calculate new values for each pixel in img
 cv::Mat recolorChannel(cv::Mat img, int cLow, int cHigh, const std::pair<int, int>& quantiles) {
@@ -80,23 +93,27 @@ cv::Mat recolorChannel(cv::Mat img, int cLow, int cHigh, const std::pair<int, in
             img.at<uchar>(y,x) = static_cast<uchar>(color);
         }
     }
+
     return img;
 }
+
 
 // Concat visualisalized histograms of original and new img
 cv::Mat concatHists(std::vector<cv::Mat> origHists, std::vector<cv::Mat> newHists) {
     cv::Mat result;
     cv::hconcat(origHists[0], newHists[0], result);
+    
     for (int i = 1; i < origHists.size(); i++) {
         cv::Mat tmp;
         cv::hconcat(origHists[i], newHists[i], tmp);
         cv::vconcat(result, tmp, result);
     }
+
     return result;
 }
 
-int main(int argc, char* argv[]) {
 
+int main(int argc, char* argv[]) {
     // Parsing console command
     cv::CommandLineParser parser(argc, argv, 
         "{q    | 0.01 | quantile}"
@@ -149,7 +166,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Saving and displaying new imgs 
-    std::string filename = fs::path(filepath).stem().string();
+    std::string filename = std::filesystem::path(filepath).stem().string();
     std::string exportpath = "../export/lab03/" + filename;
 
     cv::Mat newImg;
