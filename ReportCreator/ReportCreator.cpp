@@ -48,6 +48,6 @@ void ReportCreator(const std::string& labName, const std::string& taskText) {
     // Writing md-structure for image displaying
     report << "## Results:\n";
     for (const auto& name : pngFiles) { 
-        report << "![" << name << "](" << name.u8string() << ")" << std::endl;
+        report << "![" << name << "](" << name.u8string() << ")\n" << std::endl;
     }     
 }

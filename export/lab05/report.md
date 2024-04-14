@@ -99,7 +99,12 @@ int main() {
 ```
 ## Results:
 !["1-testImg.png"](1-testImg.png)
+
 !["2-core1.png"](2-core1.png)
+
 !["3-core2.png"](3-core2.png)
+
 !["4-core3.png"](4-core3.png)
+
 !["5-rgbResult.png"](5-rgbResult.png)
+
