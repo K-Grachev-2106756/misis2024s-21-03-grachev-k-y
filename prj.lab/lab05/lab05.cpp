@@ -17,7 +17,7 @@ cv::Mat1f squareCirleImg(int squareColor, int circleColor, int squareSide = 99, 
 
 
 // Unite six different pics containing the given colors
-cv::Mat1f genTestImage(int col1 = 0, int col2 = 127, int col3 = 255) {
+cv::Mat1f genTestImg(int col1 = 0, int col2 = 127, int col3 = 255) {
     cv::Mat1f result, tmp;
 
     cv::vconcat(squareCirleImg(col3, col2), squareCirleImg(col1, col2), result); // 1st col
@@ -31,7 +31,7 @@ cv::Mat1f genTestImage(int col1 = 0, int col2 = 127, int col3 = 255) {
 
 
 int main() {
-    cv::Mat1f testImg = genTestImage();
+    cv::Mat1f testImg = genTestImg();
     std::vector<cv::Mat1f> newImgs(2);
     cv::Mat cores[2] = {
         (cv::Mat_<float>(2, 2) << 1, 0, 0, -1), 
