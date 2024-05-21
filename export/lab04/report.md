@@ -1,4 +1,12 @@
-#include <iostream>
+# Report for lab04
+## Task:
+1. write a function to generate a test image (number of objects of interest, size range, contrast values and degree of blurriness - parameters)
+2. write several options for binarization (parameterized)
+3. to provide a mode for visual adjustment of binarization parameters (engines in the GUI)
+4. write a functional for detection
+5. write a functional for quality assessment (based on IoU, at a given level, calculate the number of TP, FP and FN detections)
+## Code:
+```#include <iostream>
 #include <vector>
 #include <opencv2/opencv.hpp>
 #include <ReportCreator.h>
@@ -342,3 +350,21 @@ int main() {
     "5. write a functional for quality assessment (based on IoU, "
     "at a given level, calculate the number of TP, FP and FN detections)");
 }
+```
+## Results:
+!["11ground_truth.png"](11ground_truth.png)
+
+!["12detections.png"](12detections.png)
+
+!["21ground_truth.png"](21ground_truth.png)
+
+!["22detections.png"](22detections.png)
+
+!["31ground_truth.png"](31ground_truth.png)
+
+!["32detections.png"](32detections.png)
+
+!["41ground_truth.png"](41ground_truth.png)
+
+!["42detections.png"](42detections.png)
+
