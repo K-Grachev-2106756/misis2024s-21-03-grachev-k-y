@@ -185,7 +185,7 @@ std::vector<std::vector<double>> genIOUMatrix(int width, int height,
     }
     cv::connectedComponents(detImg, detLabels, 8);
     std::vector<cv::Mat> detMasks;
-    for(int i = 1; i <= detections.size(); i++) {
+    for (int i = 1; i <= detections.size(); i++) {
         cv::Mat mask = (detLabels == i + 1);
         detMasks.push_back(mask);
     }
