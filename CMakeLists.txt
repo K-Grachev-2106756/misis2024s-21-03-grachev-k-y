@@ -16,6 +16,5 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_CURRENT_SOURCE_DIR}/bi
 find_package(OpenCV CONFIG REQUIRED)
 
 add_subdirectory(prj.lab)
-
-# ReportCreator is available only for Windows
+add_subdirectory(prj.cw)
 add_subdirectory(ReportCreator)
