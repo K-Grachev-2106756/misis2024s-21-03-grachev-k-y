@@ -60,7 +60,7 @@ namespace BlastCellDetection {
         for (int i = 0; i < 256; ++i) {
             cv::line(histImg, cv::Point(i, 255), cv::Point(i, 255 - cvRound(hist.at<float>(i))), cv::Scalar(0), 1);
         }
-        std::cout << std::endl << std::endl << std::endl << std::endl << highBound << " " << targetValue << " " << highBound << std::endl << std::endl << std::endl << std::endl;
+        std::cout << std::endl << std::endl << highBound << " " << targetValue << " " << highBound << std::endl << std::endl;
 
         cv::imshow("Original Image", histImg);
         cv::waitKey(0);
@@ -70,14 +70,19 @@ namespace BlastCellDetection {
     }
 
 
-    void detect(cv::Mat& img) {
-        cv::GaussianBlur(img, img, cv::Size(5, 5), 0);
+    void detect(const cv::Mat& originalImg, cv::Mat& detectionsImg) {
+        detectionsImg = originalImg.clone();
+
+        // Размытие для сглаживания и улучшения качества картинки
+        cv::GaussianBlur(detectionsImg, detectionsImg, cv::Size(5, 5), 0);
+        
+        // Поиск оттенка, который ближе всего к фиолетовому
         cv::Vec3b purpleColor;
-        findCellColor(img, purpleColor);
+        findCellColor(detectionsImg, purpleColor);
 
         // Разделяем изображение на три канала
         std::vector<cv::Mat> channels;
-        cv::split(img, channels);
+        cv::split(detectionsImg, channels);
         
         // Находим эффективный диапазон для каждого канала
         cv::Vec3b lowBoundPurple = {0, 0, 0}, highBoundPurple;
@@ -85,22 +90,64 @@ namespace BlastCellDetection {
             highBoundPurple[i] = findChannelRange(channels[i], purpleColor[i]);
         }
 
-        // Пороговое значение для бинаризации
-        cv::Mat binary;
-        cv::inRange(img, lowBoundPurple, highBoundPurple, binary);
+        // Бинаризация
+        cv::inRange(detectionsImg, lowBoundPurple, highBoundPurple, detectionsImg);
 
-        cv::imshow("Original Image", binary);
+        // Морфологическое замыкание для заполнения маленьких дырочек
+        cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+        cv::morphologyEx(detectionsImg, detectionsImg, cv::MORPH_CLOSE, kernel);
+
+        // Определение компонентов связности
+        cv::Mat labels, stats, centroids;
+        int nLabels = cv::connectedComponentsWithStats(detectionsImg, labels, stats, centroids);
+
+        // Заполнение оставшихся дыр внутри компонент связности
+        for (int i = 1; i < nLabels; i++) {      
+            // Создаем маску для компонента
+            cv::Mat componentMask = (labels == i);
+
+            // Находим контуры компонента
+            std::vector<std::vector<cv::Point>> contours;
+            cv::findContours(componentMask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+            // Закрашиваем внутренние области компонента
+            for (const auto& contour : contours) {
+                cv::drawContours(detectionsImg, contours, -1, cv::Scalar(255), cv::FILLED);
+            }
+        }
+        cv::imshow("Original Image", detectionsImg);
+        cv::waitKey(0);
+        /*
+        // Нахождение компонентов связности
+        // Объединение изображений вертикально
+        cv::Mat combined;
+        cv::vconcat(std::vector<cv::Mat>{binary, binary}, combined);
+
+        cv::imshow("Original Image", combined);
         cv::waitKey(0);
 
         return;
-        // Проходим по всем пикселям изображения и заменяем целевой цвет на новый
-        cv::Vec3b newColor(0, 0, 255); 
-        for (int y = 0; y < img.rows; ++y) {
-            for (int x = 0; x < img.cols; ++x) {
-                if (img.at<cv::Vec3b>(y, x) == purpleColor) {
-                    img.at<cv::Vec3b>(y, x) = newColor;
-                }
-            }
+        
+        cv::Mat labels;
+        int numComponents = connectedComponents(binary, labels, 8, CV_32S);
+
+        // Создание цветного изображения для визуализации
+        cv::Mat output = cv::Mat::zeros(binary.size(), CV_8UC3);
+
+        // Генерация случайных цветов для каждой компоненты
+        cv::RNG rng(12345);
+        std::vector<cv::Vec3b> colors(numComponents);
+        colors[0] = cv::Vec3b(0, 0, 0); // Цвет для фона
+        for (int i = 1; i < numComponents; ++i) {
+            colors[i] = cv::Vec3b(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
         }
+
+        // Окрашивание компонент связности
+        for (int y = 0; y < labels.rows; ++y) {
+            for (int x = 0; x < labels.cols; ++x) {
+                int label = labels.at<int>(y, x);
+                output.at<cv::Vec3b>(y, x) = colors[label];
+            }
+        }*/
     }
 }

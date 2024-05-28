@@ -4,7 +4,7 @@
 
 
 int main() {
-    cv::Mat img = cv::imread("../prj.cw/image.png");
+    cv::Mat img = cv::imread("../prj.cw/image.png"), detImg;
 
-    BlastCellDetection::detect(img);
+    BlastCellDetection::detect(img, detImg);
 }

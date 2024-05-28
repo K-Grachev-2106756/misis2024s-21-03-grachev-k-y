@@ -15,7 +15,7 @@ namespace BlastCellDetection {
 
     int findChannelRange(const cv::Mat& channel, int targetValue);
 
-    void detect(cv::Mat& img);
+    void detect(const cv::Mat& originalImg, cv::Mat& detectionsImg);
 
 }
 
