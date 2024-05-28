@@ -6,11 +6,18 @@
 #include <vector>
 #include <opencv2/opencv.hpp>
 
-class BlastCellDetection {
-    public:
-    private:
-};
 
+
+
+namespace BlastCellDetection {
+    
+    void findCellColor(const cv::Mat& img, cv::Vec3b& purpleColor);
+
+    int findChannelRange(const cv::Mat& channel, int targetValue);
+
+    void detect(cv::Mat& img);
+
+}
 
 
 #endif // BLASTCELLDETECTION_H
