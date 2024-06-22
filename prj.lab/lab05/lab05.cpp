@@ -77,6 +77,7 @@ int main() {
     cv::imwrite(exportpath + "5-rgbResult.png", rgbResult);
     cv::waitKey(0);
 
+    /*
     // Creating the report
     ReportCreator("lab05", 
     "1. write a function to generate all variants of a circle on a square background "
@@ -87,4 +88,5 @@ int main() {
     "3. obtain images I1 and I2 by linear filtering with the specified cores\n"
     "4. get the image I3 = sqrt(I1^2 + I2^2)\n"
     "5. get an RGB image for visualization by placing it in channels I1, I2 and I3");
+    */
 }

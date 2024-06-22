@@ -88,6 +88,7 @@ int main() {
         std::cerr << "Error: " << ex.what() << std::endl;
     }
 
+    /*
     // Creating the report
     ReportCreator("lab02", 
     "1. write a function to generate a test img with three brightness levels"
@@ -103,7 +104,8 @@ int main() {
     "5. generate noisy imgs and histograms that are placed butt-to-butt below the test img\n"
     "6. make noise for three values of the standard deviation 3, 7, 15\n"
     "7. glue all imgs into one");
-
+    */
+   
     // Displaying the img
     cv::imshow("mainPic", mainPic);
     cv::waitKey(0);

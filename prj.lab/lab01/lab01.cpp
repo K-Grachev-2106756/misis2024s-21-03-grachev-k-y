@@ -51,6 +51,7 @@ int main(int argc, char** argv) {
         std::cerr << "Error: " << ex.what() << std::endl;
     }
 
+    /*
     // Creating the report
     ReportCreator("lab01", 
     "1. write a console application to generate a single-channel 8bpp img with a \"gradient fill\"" 
@@ -61,7 +62,7 @@ int main(int argc, char** argv) {
     "then just show the result on the screen and close the application by pressing any key\n"
     "5. get the s, h, gamma parameters from the command line parameters, if the keys are not specified, "
     "then use the defaults (s=3, h=30, gamma=2.4)");
-
+    */
     // Displaying the img
     cv::imshow(imgName, img);
     cv::waitKey(0);

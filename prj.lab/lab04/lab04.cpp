@@ -332,6 +332,7 @@ int main() {
         backGroundColor -= 10;
     }
 
+    /*
     // Creating the report
     ReportCreator("lab04", 
     "1. write a function to generate a test image (number of objects of interest, "
@@ -341,4 +342,5 @@ int main() {
     "4. write a functional for detection\n"
     "5. write a functional for quality assessment (based on IoU, "
     "at a given level, calculate the number of TP, FP and FN detections)");
+    */
 }
