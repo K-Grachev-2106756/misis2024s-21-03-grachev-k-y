@@ -339,16 +339,6 @@ int main() {
         stddev += 6;
         backGroundColor -= 10;
     }
-
-    // Creating the report
-    ReportCreator("lab04", 
-    "1. write a function to generate a test image (number of objects of interest, "
-    "size range, contrast values and degree of blurriness - parameters)\n"
-    "2. write several options for binarization (parameterized)\n"
-    "3. to provide a mode for visual adjustment of binarization parameters (engines in the GUI)\n"
-    "4. write a functional for detection\n"
-    "5. write a functional for quality assessment (based on IoU, "
-    "at a given level, calculate the number of TP, FP and FN detections)");
 }
 ```
 ## Results:

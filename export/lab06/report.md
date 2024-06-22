@@ -247,13 +247,6 @@ int main() {
         cv::imwrite(folder + "lab06/" + std::to_string(10 * i + 1) + "ground_truth.png", gtImg);
         cv::imwrite(folder + "lab06/" + std::to_string(10 * i + 2) + "detections.png", imgWithDetections);
     }
-
-    // Creating the report
-    ReportCreator("lab06", 
-    "1. implement an object detector using the Hough Transform\n"
-    "size range, contrast values and degree of blurriness - parameters)\n"
-    "2. implement FRAC analysis of results\n"
-    "3. compare methods 4 and 6 laboratory");
 }
 ```
 ## Results:

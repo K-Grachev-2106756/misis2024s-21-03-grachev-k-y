@@ -102,22 +102,6 @@ int main() {
         std::cerr << "Error: " << ex.what() << std::endl;
     }
 
-    // Creating the report
-    ReportCreator("lab02", 
-    "1. write a function to generate a test img with three brightness levels"
-    "(256 is the side of the img, 209 is the side of the inner square, 83 " 
-    "is the radius of the circle)\n"
-    "2. write a function to draw a brightness histogram on a square raster with "
-    "a side of 256 in the form of columns with a width of 1px brightness 0 on a "
-    "background of 230, normalize so that the maximum value has a height 230\n"
-    "3. write a noise reduction function (additive normal unbiased noise with a "
-    "given value of the standard deviation)\n"
-    "4. generate test imgs for 4 sets of levels and glue them from left to right\n"
-    "- [0,127,255]\n- [20,127,235]\n- [55,127,200]\n- [90,127,165]\n"
-    "5. generate noisy imgs and histograms that are placed butt-to-butt below the test img\n"
-    "6. make noise for three values of the standard deviation 3, 7, 15\n"
-    "7. glue all imgs into one");
-
     // Displaying the img
     cv::imshow("mainPic", mainPic);
     cv::waitKey(0);

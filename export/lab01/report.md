@@ -58,27 +58,30 @@ int main(int argc, char** argv) {
     catch (const cv::Exception& ex) {
         std::cerr << "Error: " << ex.what() << std::endl;
     }
-
-    // Creating the report
-    ReportCreator("lab01", 
-    "1. write a console application to generate a single-channel 8bpp img with a \"gradient fill\"" 
-    "(from 0 to 255, from rectangles s-width, h-height) and gamma-corrected fill\n"
-    "2. strips are arranged on top of each other\n"
-    "3. gamma correction is executed as a function\n"
-    "4. the name of the output file is specified as an optional parameter (without a key) if this parameter is not set, "
-    "then just show the result on the screen and close the application by pressing any key\n"
-    "5. get the s, h, gamma parameters from the command line parameters, if the keys are not specified, "
-    "then use the defaults (s=3, h=30, gamma=2.4)");
-
-    // Displaying the img
-    cv::imshow(imgName, img);
-    cv::waitKey(0);
 }
 ```
+## Process:
+
+В коде определена функция gammaCorrection, которая принимает на вход уровень цвета и значение гамма-коррекции, а возвращает скорректированный уровень цвета.
+
+Используется cv::CommandLineParser для обработки параметров командной строки.
+Поддерживаются параметры:
+- imgName - имя выходного изображения (по умолчанию не задано).
+- s - ширина шага градиента (по умолчанию 3).
+- h - высота шага градиента (по умолчанию 30).
+- gamma - коэффициент гамма-коррекции (по умолчанию 2.4).
+
+Создаётся матрица изображения cv::Mat1b с высотой 2 * h и шириной 256 * s. 
+Заполнение изображения осуществляется двумя циклами: внешний цикл для каждого уровня градиента от 0 до 255, внутренний - для заполнения полос соответствующего цвета.
+
+Для каждого уровня цвета сначала заполняется верхняя половина (оригинальные уровни цвета), затем нижняя половина (гамма-корректированные уровни).
+
 ## Results:
+Картинка при запуске с дефолтными параметрами:
 !["default.png"](default.png)
 
+Картинка при изменении коэффициента gamma=10:
 !["gamma.png"](gamma.png)
 
+Картинка при изменении параметра wigth:
 !["width.png"](width.png)
-

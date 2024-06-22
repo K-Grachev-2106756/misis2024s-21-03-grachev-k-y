@@ -84,17 +84,6 @@ int main() {
     cv::imshow("rgbResult", rgbResult);
     cv::imwrite(exportpath + "5-rgbResult.png", rgbResult);
     cv::waitKey(0);
-
-    // Creating the report
-    ReportCreator("lab05", 
-    "1. write a function to generate all variants of a circle on a square background "
-    "(for gray levels 0, 127, 255), the size of the square is 99, the radius of the "
-    "circle is 25, the circle is in the center of the square. The squares form a rectangle "
-    "(3 columns, 2 rows)\n"
-    "2. set two cores for linear filtering: {1, 0, 0, -1}, {0, 1, -1, 0}\n"
-    "3. obtain images I1 and I2 by linear filtering with the specified cores\n"
-    "4. get the image I3 = sqrt(I1^2 + I2^2)\n"
-    "5. get an RGB image for visualization by placing it in channels I1, I2 and I3");
 }
 ```
 ## Results:

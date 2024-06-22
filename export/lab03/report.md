@@ -191,12 +191,6 @@ int main(int argc, char* argv[]) {
         cv::imshow("newImgGen", newImg);
         cv::waitKey(0);
     }
-
-    // Creating the report
-    ReportCreator("lab03", 
-    "1. write a function for auto-contrast by quantiles of black and white\n"
-    "2. write functions for auto-contrasting a color image (channel-by-channel and jointly)\n"
-    "3. arrange it in the form of a console application (the type of input image is determined automatically)\n");
 }
 ```
 ## Results:
