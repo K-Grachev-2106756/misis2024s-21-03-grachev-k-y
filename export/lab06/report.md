@@ -1,19 +1,12 @@
 # Report for lab06
 ## Task:
-1. implement an object detector using the Hough Transform
-size range, contrast values and degree of blurriness - parameters)
+1. implement an object detector using the Hough Transform size range, contrast values and degree of blurriness - parameters
 2. implement FRAC analysis of results
 3. compare methods 4 and 6 laboratory
-## Code:
-```#include <iostream>
-#include <vector>
-#include <opencv2/opencv.hpp>
-#include <ReportCreator.h>
 
-#define TRESHOLD_QUALITY 0.6
-
-
-// Service class containing info about objects
+## Process:
+Circle - класс представляет окружность с заданными координатами центра (x, y), радиусом (radius) и цветом (color).
+```
 class Circle {
     public:
         int x, y, radius, color;
@@ -24,9 +17,10 @@ class Circle {
             this->color = color;            
         }
 };
+```
 
-
-// Service class containing info about detection results
+DetectionInfo - класс хранит информацию о результатах обнаружения объектов: количество истинно положительных (TP), ложноположительных (FP) и ложноотрицательных (FN) детекций.
+```
 class DetectionInfo {
     public:
         int TP = 0, FP = 0, TN = 0, FN = 0;
@@ -37,11 +31,11 @@ class DetectionInfo {
             this->FN = FN;
         }
 };
+```
 
-
-// Make json file with info about circles
-void makeJson(int width, int height, int backGroundColor, int blur, int stddev,
-    const std::string& filePath, const std::vector<Circle>& circles) {
+makeJson - cохраняет информацию об окружностях и параметрах изображения в JSON-файл.
+```
+void makeJson(int width, int height, int backGroundColor, int blur, int stddev, const std::string& filePath, const std::vector<Circle>& circles) {
     cv::FileStorage fs(filePath, cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
     fs << "data" << "{"; 
     fs << "objects" << "[";
@@ -57,14 +51,13 @@ void makeJson(int width, int height, int backGroundColor, int blur, int stddev,
     fs << "color" << backGroundColor << "blur" << blur << "noise" << stddev << "amount" << (int)circles.size();
     fs << "}"; 
     fs << "}";
-
     fs.release();
 }
+```
 
-
-// Get info from prepared json
-void readJson(int& width, int& height, int& backGroundColor, int& blur, int& stddev, int& amount,
-    const std::string& filename, std::vector<Circle>& circles) {
+readJson - читает информацию об окружностях и параметрах изображения из JSON-файла.
+```
+void readJson(int& width, int& height, int& backGroundColor, int& blur, int& stddev, const std::string& filename, std::vector<Circle>& circles) {
     cv::FileStorage fs(filename, cv::FileStorage::READ | cv::FileStorage::FORMAT_JSON);
 
     cv::FileNode data = fs["data"];
@@ -78,13 +71,14 @@ void readJson(int& width, int& height, int& backGroundColor, int& blur, int& std
 
     cv::FileNode background = data["background"];
     width = background["size"][0], height = background["size"][1], backGroundColor = background["color"],
-        blur = background["blur"], stddev = background["noise"], amount = background["amount"];
+        blur = background["blur"], stddev = background["noise"];
 
     fs.release();
 }
+```
 
-
-// Gen img with noise and blur
+genImg - cоздаёт изображение с фоном, окружностями, размытием и шумом.
+```
 cv::Mat genImg(int width, int height, int backGroundColor, int blur, int stddev, const std::vector<Circle>& circles) {
     cv::Mat result = cv::Mat(cv::Size(width, height), CV_8UC1, cv::Scalar(backGroundColor));
     
@@ -116,8 +110,10 @@ cv::Mat genImg(int width, int height, int backGroundColor, int blur, int stddev,
     return result;
 }
 
+```
 
-// Evaluate IOU matrix
+estimateDetections - оценивает результаты обнаружений (TP, FP, FN) на основе матрицы IoU и заданного порогового значения качества.
+```
 DetectionInfo estimateDetections(const std::vector<std::vector<double>>& ious) {
     DetectionInfo result;
 
@@ -146,8 +142,10 @@ DetectionInfo estimateDetections(const std::vector<std::vector<double>>& ious) {
     return result;
 }
 
+```
 
-// Calculate IOU for evaluating our detections
+calcSingleIOU - вычисляет метрику IoU (Intersection over Union) между эталонной и обнаруженной маской.
+```
 double calcSingleIOU(const cv::Mat& gtMask, const cv::Mat& mask) {
     cv::Mat intersection, unions;
     cv::bitwise_and(gtMask, mask, intersection);
@@ -156,9 +154,10 @@ double calcSingleIOU(const cv::Mat& gtMask, const cv::Mat& mask) {
 
     return ((double)intersectionsArea / (double)unionArea);
 }
+```
 
-
-// Fill IOU matrix
+genIOUMatrix - генерирует матрицу IoU для всех пар эталонных и обнаруженных окружностей.
+```
 std::vector<std::vector<double>> genIOUMatrix(int width, int height, 
     const std::vector<Circle>& circles, const std::vector<Circle>& detections) {
     cv::Mat gtImg(width, height, CV_8UC1, cv::Scalar(0)), detImg(width, height, CV_8UC1, cv::Scalar(0)), 
@@ -175,7 +174,7 @@ std::vector<std::vector<double>> genIOUMatrix(int width, int height,
     }
     cv::connectedComponents(detImg, detLabels, 8);
     std::vector<cv::Mat> detMasks;
-    for (int i = 1; i <= detections.size(); i++) {
+    for(int i = 1; i <= detections.size(); i++) {
         cv::Mat mask = (detLabels == i + 1);
         detMasks.push_back(mask);
     }
@@ -192,8 +191,10 @@ std::vector<std::vector<double>> genIOUMatrix(int width, int height,
 
     return ious;
 }
+```
 
-
+Анализ FRAC (рабочей характеристики приемника с свободным откликом) позволяет оценить эффективность обнаружения объектов при различных пороговых значениях. Как правило, он включает в себя построение графика и расчет показателей на основе результатов обнаружения. Эта функция вычисляет площадь под кривой ROC на основе ряда точек. Каждая точка представлена парой значений (чувствительность, 1/ложноположительные срабатывания на изображение). Площадь под этой кривой дает общую оценку эффективности обнаружения.
+```
 double calculateFROC(const std::vector<std::pair<double, double>>& points) {
     double area = 0.0;
     for (int i = 1; i < points.size(); ++i) {
@@ -204,8 +205,10 @@ double calculateFROC(const std::vector<std::pair<double, double>>& points) {
 
     return area;
 }
+```
 
-
+houghDetector - функция использует входное изображение getimage в оттенках серого, применяет размытие по Гауссу для уменьшения шума, а затем обнаруживает круги, используя функцию cv::HoughCircles из OpenCV. Обнаруженные окружности рисуются в detectionsImg и сохраняются в векторе обнаружений как экземпляры пользовательской структуры окружностей.
+```
 void houghDetector(const cv::Mat& gtImg, cv::Mat& detectionsImg, std::vector<Circle>& detections,
     int minRadius, int maxRadius, int distanceRate = 8, int param1 = 30, int param2 = 45) {
     cv::Mat blurredImg;
@@ -223,37 +226,27 @@ void houghDetector(const cv::Mat& gtImg, cv::Mat& detectionsImg, std::vector<Cir
         detections.push_back(Circle((int)circle[0], (int)circle[1], (int)circle[2], 255));
     }
 }
-
-
-int main() {
-    // Main parameters
-    std::string folder = "../export/";
-    int circlesInRow = 3, minRadius = 14, maxRadius = 16, minColor = 145, maxColor = 225, 
-        stddev = 5, blur = 33, backGroundColor = 130, width = 350, height = 350, amount = 4;
-    
-    for (int i = 1; i < 5; i++) {
-        std::vector<Circle> circles, detections;
-        readJson(width, height, backGroundColor, blur, stddev, amount,
-            folder + "lab04/ground_truth" + std::to_string(i) + ".json", circles);
-        
-        cv::Mat gtImg = genImg(width, height, backGroundColor, blur, stddev, circles), imgWithDetections;
-        houghDetector(gtImg, imgWithDetections, detections, minRadius, maxRadius, 8, 15, 20);
-
-        cv::imshow("detection results", imgWithDetections);
-        cv::waitKey(0);
-
-        // Saving results
-        makeJson(width, height, backGroundColor, blur, stddev, folder + "lab06/detections" + std::to_string(i) + ".json", detections);
-        cv::imwrite(folder + "lab06/" + std::to_string(10 * i + 1) + "ground_truth.png", gtImg);
-        cv::imwrite(folder + "lab06/" + std::to_string(10 * i + 2) + "detections.png", imgWithDetections);
-    }
-}
 ```
-## Results:
+
+main()
+- Инициализируем параметры int circlesInRow = 3, minRadius = 14, maxRadius = 16, minColor = 145, maxColor = 225, stddev = 5, blur = 33, backGroundColor = 130, width = 350, height = 350, amount = 4;
+
+- Считываем изображение по json из 4 лабораторной работы
+```
+    readJson(width, height, backGroundColor, blur, stddev, amount,
+        folder + "lab04/ground_truth" + std::to_string(i) + ".json", circles);
+
+    cv::Mat gtImg = genImg(width, height, backGroundColor, blur, stddev, circles), imgWithDetections;
+```
 !["11ground_truth.png"](11ground_truth.png)
 
+- Детектируем. В качестве двух параметров для HoughCircles были переданы значения 15 и 20 соответственно.
+```
+    houghDetector(gtImg, imgWithDetections, detections, minRadius, maxRadius, 8, 15, 20);
+```
 !["12detections.png"](12detections.png)
 
+## Other results:
 !["21ground_truth.png"](21ground_truth.png)
 
 !["22detections.png"](22detections.png)
