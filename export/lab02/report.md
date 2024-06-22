@@ -11,16 +11,10 @@
 5. generate noisy imgs and histograms that are placed butt-to-butt below the test img
 6. make noise for three values of the standard deviation 3, 7, 15
 7. glue all imgs into one
-## Code:
-```#include <iostream>
-#include <vector>
-#include <opencv2/opencv.hpp>
-#include <ReportCreator.h>
 
-
-
-
-// Generate img for tests
+## Process:
+Генерируется тестовоое изображение по предложенным параметрам размером 256х256. Заданы три уровня яркости: фон, внутренний квадрат и круг. Фон - темный квадрат, внутренний квадрат - уровень яркости из lvl[1], круг - уровень яркости из lvl[2].
+```
 cv::Mat1b generateImg(const std::vector<int>& lvl) {
     cv::Mat1b img(256, 256, lvl[0]); // Background dark rectangle
     cv::rectangle(img, cv::Rect(23.5, 23.5, 209, 209), lvl[1], -1); // Second rectangle layer
@@ -28,9 +22,10 @@ cv::Mat1b generateImg(const std::vector<int>& lvl) {
 
     return img;
 }
+```
 
-
-// Draw histogram of the given img
+Построение гистограммы яркости размером 256x256 пикселей с фоном яркости 230.
+```
 cv::Mat drawHistogram(const cv::Mat& img) {
     cv::Mat1b histImg(256, 256, 230); // Background img
 
@@ -52,9 +47,10 @@ cv::Mat drawHistogram(const cv::Mat& img) {
 
     return histImg;
 }
+```
 
-
-// Change some pixels to add noise
+Определена функция addGaussianNoise, которая добавляет к изображению нормальный шум с заданным стандартным отклонением. Шум генерируется с помощью cv::RNG и добавляется к исходному изображению.
+```
 cv::Mat addGaussianNoise(const cv::Mat& img, double stddev) {
     cv::Mat noisyImg = img.clone();
     cv::RNG rng; // Pseudorandom numbers module of the cv library
@@ -66,47 +62,30 @@ cv::Mat addGaussianNoise(const cv::Mat& img, double stddev) {
 
     return noisyImg;
 }
+```
 
-
-int main() {
-    std::vector<cv::Mat1b> imgs;
-    std::vector<std::vector<int>> lvls = {
-        {0, 127, 255},
-        {20, 127, 235},
-        {55, 127, 200},
-        {90, 127, 165}
-    };
-
-    // Main action
-    for (int i = 0; i < 4; i++) {
-        cv::Mat1b img = generateImg(lvls[i]);
-        cv::Mat1b lvlImg = img.clone();
-        for (const auto& std : {3, 7, 15}) {
-            cv::Mat1b noisyImg = addGaussianNoise(img, std);
-            cv::vconcat(lvlImg, noisyImg, lvlImg);
-            cv::vconcat(lvlImg, drawHistogram(noisyImg), lvlImg);
-        }
-        imgs.push_back(lvlImg);
+Итак, создаются изображения для четырех наборов уровней яркости. Для каждого изображения генерируются зашумленные версии с тремя значениями стандартного отклонения (3, 7, 15). К каждому изображению добавляются соответствующие гистограммы.
+```
+for (int i = 0; i < 4; i++) {
+    cv::Mat1b img = generateImg(lvls[i]);
+    cv::Mat1b lvlImg = img.clone();
+    for (const auto& std : {3, 7, 15}) {
+        cv::Mat1b noisyImg = addGaussianNoise(img, std);
+        cv::vconcat(lvlImg, noisyImg, lvlImg);
+        cv::vconcat(lvlImg, drawHistogram(noisyImg), lvlImg);
     }
-
-    // Gluing all imgs
-    cv::Mat1b mainPic = imgs[0].clone();
-    for (int i = 1; i < 4; i++) {
-        cv::hconcat(mainPic, imgs[i], mainPic);
-    }
-
-    // Saving the img
-    try {
-        cv::imwrite("../export/lab02/result.png", mainPic);
-    } catch (const cv::Exception& ex) {
-        std::cerr << "Error: " << ex.what() << std::endl;
-    }
-
-    // Displaying the img
-    cv::imshow("mainPic", mainPic);
-    cv::waitKey(0);
+    imgs.push_back(lvlImg);
 }
 ```
+
+После чего все изображения склеиваются. Сверху - оригинальное, после чего парами: зашумлённое тестовое изображение и его гистограмма.
+```
+cv::Mat1b mainPic = imgs[0].clone();
+for (int i = 1; i < 4; i++) {
+    cv::hconcat(mainPic, imgs[i], mainPic);
+}
+```
+
 ## Results:
 !["result.png"](result.png)
 
