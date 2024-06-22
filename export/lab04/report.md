@@ -5,17 +5,10 @@
 3. to provide a mode for visual adjustment of binarization parameters (engines in the GUI)
 4. write a functional for detection
 5. write a functional for quality assessment (based on IoU, at a given level, calculate the number of TP, FP and FN detections)
-## Code:
-```#include <iostream>
-#include <vector>
-#include <opencv2/opencv.hpp>
-#include <ReportCreator.h>
 
-#define TRESHOLD_QUALITY 0.6
-#define BLOCK_SIZE 33
-
-
-// Service class containing info about objects
+## Process:
+Circle - класс представляет окружность с заданными координатами центра (x, y), радиусом (radius) и цветом (color).
+```
 class Circle {
     public:
         int x, y, radius, color;
@@ -26,9 +19,10 @@ class Circle {
             this->color = color;            
         }
 };
+```
 
-
-// Service class containing info about detection results
+DetectionInfo - класс хранит информацию о результатах обнаружения объектов: количество истинно положительных (TP), ложноположительных (FP) и ложноотрицательных (FN) детекций.
+```
 class DetectionInfo {
     public:
         int TP = 0, FP = 0, TN = 0, FN = 0;
@@ -39,11 +33,11 @@ class DetectionInfo {
             this->FN = FN;
         }
 };
+```
 
-
-// Make json file with info about circles
-void makeJson(int width, int height, int backGroundColor, int blur, int stddev,
-    const std::string& filePath, const std::vector<Circle>& circles) {
+makeJson - cохраняет информацию об окружностях и параметрах изображения в JSON-файл.
+```
+void makeJson(int width, int height, int backGroundColor, int blur, int stddev, const std::string& filePath, const std::vector<Circle>& circles) {
     cv::FileStorage fs(filePath, cv::FileStorage::WRITE | cv::FileStorage::FORMAT_JSON);
     fs << "data" << "{"; 
     fs << "objects" << "[";
@@ -59,14 +53,13 @@ void makeJson(int width, int height, int backGroundColor, int blur, int stddev,
     fs << "color" << backGroundColor << "blur" << blur << "noise" << stddev << "amount" << (int)circles.size();
     fs << "}"; 
     fs << "}";
-
     fs.release();
 }
+```
 
-
-// Get info from prepared json
-void readJson(int& width, int& height, int& backGroundColor, int& blur, int& stddev,
-    const std::string& filename, std::vector<Circle>& circles) {
+readJson - читает информацию об окружностях и параметрах изображения из JSON-файла.
+```
+void readJson(int& width, int& height, int& backGroundColor, int& blur, int& stddev, const std::string& filename, std::vector<Circle>& circles) {
     cv::FileStorage fs(filename, cv::FileStorage::READ | cv::FileStorage::FORMAT_JSON);
 
     cv::FileNode data = fs["data"];
@@ -84,9 +77,10 @@ void readJson(int& width, int& height, int& backGroundColor, int& blur, int& std
 
     fs.release();
 }
+```
 
-
-// Gen img with noise and blur
+genImg - cоздаёт изображение с фоном, окружностями, размытием и шумом.
+```
 cv::Mat genImg(int width, int height, int backGroundColor, int blur, int stddev, const std::vector<Circle>& circles) {
     cv::Mat result = cv::Mat(cv::Size(width, height), CV_8UC1, cv::Scalar(backGroundColor));
     
@@ -118,14 +112,17 @@ cv::Mat genImg(int width, int height, int backGroundColor, int blur, int stddev,
     return result;
 }
 
+```
 
-// Checks the connectivity component for validity by comparing the area
+isValidComponent - проверяет, является ли область связной компоненты валидной по площади: площадь лежит в пределах (0.8 * gtSquare; 1.2 * grSquare)
+```
 bool isValidComponent(int area, int minRadius, int maxRadius) {
     return (area > 0.8 * CV_PI * minRadius * minRadius && area < 1.2 * CV_PI * maxRadius * maxRadius);
 }
+```
 
-
-// Find and draw the detections on the test img
+drawDetection - рисует обнаруженные окружности на изображении и добавляет их в список детекций.
+```
 void drawDetection(int width, int height, int stddev, 
     const cv::Mat& testImg, std::vector<Circle>& detections, const std::vector<cv::Mat>& componentMasks) {
     cv::Mat bluredResult = cv::Mat(width, height, CV_8UC1);
@@ -163,9 +160,10 @@ void drawDetection(int width, int height, int stddev,
         cv::circle(testImg, cv::Point(det.x, det.y), det.radius, cv::Scalar(255, 0, 102), 2);
     }
 }
+```
 
-
-// Calculate IOU for evaluating our detections
+calcSingleIOU - вычисляет метрику IoU (Intersection over Union) между эталонной и обнаруженной маской.
+```
 double calcSingleIOU(const cv::Mat& gtMask, const cv::Mat& mask) {
     cv::Mat intersection, unions;
     cv::bitwise_and(gtMask, mask, intersection);
@@ -174,9 +172,10 @@ double calcSingleIOU(const cv::Mat& gtMask, const cv::Mat& mask) {
 
     return ((double)intersectionsArea / (double)unionArea);
 }
+```
 
-
-// Fill IOU matrix
+genIOUMatrix - генерирует матрицу IoU для всех пар эталонных и обнаруженных окружностей.
+```
 std::vector<std::vector<double>> genIOUMatrix(int width, int height, 
     const std::vector<Circle>& circles, const std::vector<Circle>& detections) {
     cv::Mat gtImg(width, height, CV_8UC1, cv::Scalar(0)), detImg(width, height, CV_8UC1, cv::Scalar(0)), 
@@ -210,9 +209,10 @@ std::vector<std::vector<double>> genIOUMatrix(int width, int height,
 
     return ious;
 }
+```
 
-
-// Evaluate IOU matrix
+estimateDetections - оценивает результаты обнаружений (TP, FP, FN) на основе матрицы IoU и заданного порогового значения качества.
+```
 DetectionInfo estimateDetections(const std::vector<std::vector<double>>& ious) {
     DetectionInfo result;
 
@@ -241,8 +241,10 @@ DetectionInfo estimateDetections(const std::vector<std::vector<double>>& ious) {
     return result;
 }
 
+```
 
-// Finds the connectivity components and evaluates the quality of the detections
+componentsDetector - выполняет обнаружение объектов на изображении, используя метод связных компонент и пороговое преобразование. Оценивает качество обнаружений на основе матрицы IoU и порогового значения качества.
+```
 void componentsDetector(int width, int height, int stddev, int minRadius, int maxRadius,
     const cv::Mat& testImg, std::vector<Circle>& detections, cv::Mat& imgWithDetections, const std::vector<Circle>& circles) {
     cv::Mat result = cv::Mat(width, height, CV_8UC1), binImg, centroids, stats, labels;
@@ -281,14 +283,17 @@ void componentsDetector(int width, int height, int stddev, int minRadius, int ma
     std::cout << "\tQuality: " << 
         (double)detectionInfo.TP / (double)(detectionInfo.TP + detectionInfo.FP + detectionInfo.FN) << std::endl;
 }
+```
 
+main()
+- Инициализирует начальные параметры изображения и окружностей. К примеру: circlesInRow = 3, minRadius = 14, maxRadius = 16, minColor = 145, maxColor = 225, stddev = 5, blur = 33, backGroundColor = 130, width = 350, height = 350;
+- В цикле создаёт несколько тестовых изображений с разными окружностями и параметрами.
 
-int main() {
-    // Main parameters
-    std::string folder = "../export/lab04/";
-    int circlesInRow = 3, minRadius = 14, maxRadius = 16, minColor = 145, maxColor = 225, 
-        stddev = 5, blur = 33, backGroundColor = 130, width = 350, height = 350;
+!["11ground_truth.png"](11ground_truth.png)
 
+- Для каждого изображения:
+- Генерирует информацию об окружностях и сохраняет её в JSON-файл.
+```
     for(int i = 1; i < 5; i++) {
         std::vector<Circle> circles, detections;
 
@@ -314,37 +319,31 @@ int main() {
 
         // Saving inf
         makeJson(width, height, backGroundColor, blur, stddev, folder + "ground_truth" + std::to_string(i) + ".json", circles);
-
-        // Loading inf
-        readJson(width, height, backGroundColor, blur, stddev, folder + "ground_truth" + std::to_string(i) + ".json", circles);
-
-        cv::Mat gtImg = genImg(width, height, backGroundColor, blur, stddev, circles), imgWithDetections;
-
-        // Main action
-        componentsDetector(width, height, stddev, minRadius, maxRadius, gtImg, detections, imgWithDetections, circles);
-        cv::imshow("detected", imgWithDetections);
-        cv::waitKey(0);
-
-        // Saving results
-        makeJson(width, height, backGroundColor, blur, stddev, folder + "detections" + std::to_string(i) + ".json", detections);
-        cv::imwrite(folder + std::to_string(10 * i + 1) + "ground_truth.png", gtImg);
-        cv::imwrite(folder + std::to_string(10 * i + 2) + "detections.png", imgWithDetections);
-
-        // Changing params
-        circlesInRow++;
-        minRadius--;
-        maxRadius++;
-        minColor -=5;
-        maxColor += 5;
-        stddev += 6;
-        backGroundColor -= 10;
     }
-}
 ```
-## Results:
-!["11ground_truth.png"](11ground_truth.png)
+
+- Создаёт изображение с окружностями, размытием и шумом.
+- Выполняет обнаружение окружностей.
+```
+    componentsDetector(width, height, stddev, minRadius, maxRadius, gtImg, detections, imgWithDetections, circles);
+```
 
 !["12detections.png"](12detections.png)
+
+- Оценивает качество обнаружений и сохраняет результаты в текстовый файл.
+
+- Изменяет параметры генерации для следующего шага цикла.
+```
+    circlesInRow++;
+    minRadius--;
+    maxRadius++;
+    minColor -=5;
+    maxColor += 5;
+    stddev += 6;
+    backGroundColor -= 10;
+```
+
+## Other results:
 
 !["21ground_truth.png"](21ground_truth.png)
 
