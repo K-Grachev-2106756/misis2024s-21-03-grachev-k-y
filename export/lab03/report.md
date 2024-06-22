@@ -4,17 +4,10 @@
 2. write functions for auto-contrasting a color image (channel-by-channel and jointly)
 3. arrange it in the form of a console application (the type of input image is determined automatically)
 
-## Code:
-```#include <iostream>
-#include <vector>
-#include <opencv2/opencv.hpp>
-#include <ReportCreator.h>
-#include <filesystem>
-
-
-
-
-// Check if the img is monochromatic
+## Process:
+Определена функция isGrayscale, которая проверяет, является ли изображение монохромным.
+Если все каналы (B, G, R) имеют одинаковые значения для всех пикселей, изображение считается монохромным.
+```
 bool isGrayscale(const cv::Mat& img) {
     if (img.channels() == 1) 
         return true;
@@ -29,9 +22,10 @@ bool isGrayscale(const cv::Mat& img) {
 
     return true;
 }
+```
 
-
-// Returns histogram for channel
+Определена функция calcHist, которая рассчитывает гистограмму для заданного канала изображения. Гистограмма имеет 256 уровней яркости.
+```
 cv::Mat calcHist(const cv::Mat& img) {
     cv::Mat hist;
     int histSize = 256;
@@ -42,9 +36,10 @@ cv::Mat calcHist(const cv::Mat& img) {
 
     return hist;
 }
+```
 
-
-// Returns img of the histogram
+Определена функция drawHist, которая нормализует гистограмму и рисует её в виде изображения размером 256x256 пикселей.
+```
 cv::Mat drawHist(cv::Mat hist) {
     cv::normalize(hist, hist, 0, 256, cv::NORM_MINMAX);
     cv::Mat histImage(256, 256, 0);
@@ -54,9 +49,10 @@ cv::Mat drawHist(cv::Mat hist) {
 
     return histImage;
 }
+```
 
-
-// Returns levels of white and black
+Определена функция calcQuantiles, которая рассчитывает квантильные значения для заданной гистограммы. Квантильные значения определяют уровни яркости, ниже и выше которых находятся определённые доли всех пикселей.
+```
 std::pair<int, int> calcQuantiles(const cv::Mat& hist, double quantile) {
     std::pair<int, int> quantiles = {0, 0};
     int pixCount = cv::sum(hist)[0];
@@ -81,18 +77,10 @@ std::pair<int, int> calcQuantiles(const cv::Mat& hist, double quantile) {
 
     return quantiles;
 }
+```
 
-
-// Returns new level for pixel
-int calculateNewLevel(int c_low, int c_high, int blackQuantile, int whiteQuantile, int currentValue) {
-    if (currentValue <= blackQuantile) return blackQuantile;
-    if (currentValue >= whiteQuantile) return whiteQuantile;
-
-    return c_low + (currentValue - blackQuantile) * (c_high - c_low) / (whiteQuantile - blackQuantile);
-}
-
-
-// Calculate new values for each pixel in img
+Определена функция recolorChannel, которая применяет новое значение яркости для каждого пикселя в канале изображения на основе квантильных значений.
+```
 cv::Mat recolorChannel(cv::Mat img, int cLow, int cHigh, const std::pair<int, int>& quantiles) {
     for (int y = 0; y < img.rows; y++) {
         for (int x = 0; x < img.cols; x++) {
@@ -103,9 +91,10 @@ cv::Mat recolorChannel(cv::Mat img, int cLow, int cHigh, const std::pair<int, in
 
     return img;
 }
+```
 
-
-// Concat visualisalized histograms of original and new img
+Определена функция concatHists, которая объединяет визуализированные гистограммы оригинального и нового изображений.
+```
 cv::Mat concatHists(std::vector<cv::Mat> origHists, std::vector<cv::Mat> newHists) {
     cv::Mat result;
     cv::hconcat(origHists[0], newHists[0], result);
@@ -118,105 +107,43 @@ cv::Mat concatHists(std::vector<cv::Mat> origHists, std::vector<cv::Mat> newHist
 
     return result;
 }
-
-
-int main(int argc, char* argv[]) {
-    // Parsing console command
-    cv::CommandLineParser parser(argc, argv, 
-        "{q    | 0.01 | quantile}"
-        "{path |      | filepath to img}"
-    );
-    float quantile = parser.get<float>("q");
-    std::string filepath = parser.get<std::string>("path");
-
-    // Reading img
-    cv::Mat img = cv::imread(filepath);
-    if (img.empty()) {
-        std::cerr << "Unable to read image: " << filepath << std::endl;
-        return 0;
-    }
-
-    // We will have to rewrite the img if we recognise it as monochromatic
-    bool isGray = isGrayscale(img);
-    if (isGray) {
-        cv::cvtColor(img, img, cv::COLOR_BGR2GRAY);
-    }
-
-    // Spliting to channels
-    std::vector<cv::Mat> channels;
-    cv::split(img, channels);
-    
-    // Getting information about quantiles for each channel
-    std::vector<std::pair<int, int>> quantileData;
-    std::vector<cv::Mat> origHists;
-    int minWhite = 255, maxBlack = 0;
-    for (auto& channel : channels) {
-        cv::Mat hist = calcHist(channel);
-        std::pair<int, int> quantiles = calcQuantiles(hist, quantile);
-        minWhite = minWhite > quantiles.first ? quantiles.first : minWhite;
-        maxBlack = maxBlack < quantiles.second ? quantiles.second : maxBlack;
-        quantileData.push_back(quantiles);
-        origHists.push_back(drawHist(hist));
-    }
-
-    // Creating new img by updating each channel
-    std::vector<cv::Mat> newChannels, newHists, newChannelsGen, newHistsGen;
-    for (int i = 0; i < channels.size(); i++) {
-        double lowGray, highGray;
-        cv::minMaxLoc(channels[i], &lowGray, &highGray);
-        newChannels.push_back(recolorChannel(channels[i].clone(), lowGray, highGray, quantileData[i]));
-        newHists.push_back(drawHist(calcHist(newChannels[i]))); // updating with their own quantiles
-        if (!isGray) {
-            newChannelsGen.push_back(recolorChannel(channels[i].clone(), lowGray, highGray, {minWhite, maxBlack}));
-            newHistsGen.push_back(drawHist(calcHist(newChannelsGen[i]))); // updating with general quantiles
-        }
-    }
-
-    // Saving and displaying new imgs 
-    std::string filename = std::filesystem::path(filepath).stem().string();
-    std::string exportpath = "../export/lab03/" + filename;
-
-    cv::Mat newImg;
-    cv::merge(newChannels, newImg);
-    cv::imwrite(exportpath + "1orig.png", img);
-    cv::imwrite(exportpath + "2scaled.png", newImg);
-    cv::imwrite(exportpath + "3scaledhist.png", concatHists(origHists, newHists));
-    cv::imshow("newImg", newImg);
-    cv::waitKey(0);
-
-    if (!isGray) {
-        cv::merge(newChannelsGen, newImg);
-        cv::imwrite(exportpath + "4gen.png", newImg);
-        cv::imwrite(exportpath + "5genhist.png", concatHists(origHists, newHistsGen));
-        cv::imshow("newImgGen", newImg);
-        cv::waitKey(0);
-    }
-}
 ```
-## Results:
+
+main:
+
+- Парсинг командной строки для получения пути к изображению и значения квантиля.
+
+- Чтение изображения и проверка на монохромность.
 !["11orig.png"](11orig.png)
 
+- Разделение изображения на каналы.
+
+- Расчёт квантилей и гистограмм для каждого канала.
+!["13scaledhist.png"](13scaledhist.png)
 !["12scaled.png"](12scaled.png)
 
-!["13scaledhist.png"](13scaledhist.png)
-
+- Создание новых изображений путем обновления каждого канала.
+!["15genhist.png"](15genhist.png)
 !["14gen.png"](14gen.png)
 
-!["15genhist.png"](15genhist.png)
-
+## Other results:
+###
+Оригинал:
 !["21orig.png"](21orig.png)
 
+После поканального контрастирования:
+!["23scaledhist.png"](23scaledhist.png)
 !["22scaled.png"](22scaled.png)
 
-!["23scaledhist.png"](23scaledhist.png)
-
+После совместного контрастирования:
+!["25genhist.png"](25genhist.png)
 !["24gen.png"](24gen.png)
 
-!["25genhist.png"](25genhist.png)
-
+###
+Оригинал:
 !["31orig.png"](31orig.png)
 
+После совместного контрастирования:
 !["32scaled.png"](32scaled.png)
-
 !["33scaledhist.png"](33scaledhist.png)
 
