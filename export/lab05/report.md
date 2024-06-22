@@ -5,16 +5,10 @@
 3. obtain images I1 and I2 by linear filtering with the specified cores
 4. get the image I3 = sqrt(I1^2 + I2^2)
 5. get an RGB image for visualization by placing it in channels I1, I2 and I3
-## Code:
-```#include <iostream>
-#include <vector>
-#include <opencv2/opencv.hpp>
-#include <ReportCreator.h>
 
-
-
-
-// Generate a circle in a square
+## Process:
+Функция squareCircleImg генерирует изображение квадрата с кругом в центре. В качестве параметров можно указать цвета квадрата и круга.
+```
 cv::Mat1f squareCirleImg(int squareColor, int circleColor, int squareSide = 99, int radius = 25) {
     cv::Mat1f img(squareSide, squareSide, squareColor);
     cv::Point centre(squareSide / 2, squareSide / 2);
@@ -22,9 +16,10 @@ cv::Mat1f squareCirleImg(int squareColor, int circleColor, int squareSide = 99, 
 
     return img;
 }
+```
 
-
-// Unite six different pics containing the given colors
+Функция genTestImage генерирует составное тестовое изображение, состоящее из шести квадратов, расположенных в сетке размером 3х2. Каждый квадрат содержит круг с различными комбинациями уровней серого (0, 127, 255).
+```
 cv::Mat1f genTestImage(int col1 = 0, int col2 = 127, int col3 = 255) {
     cv::Mat1f result, tmp;
 
@@ -36,17 +31,21 @@ cv::Mat1f genTestImage(int col1 = 0, int col2 = 127, int col3 = 255) {
 
     return result;
 }
+```
+main()
 
-
-int main() {
+- Генерируется тестовое изображение, инициализируются ядра 
+```
     cv::Mat1f testImg = genTestImage();
-    std::vector<cv::Mat1f> newImgs(2);
     cv::Mat cores[2] = {
         (cv::Mat_<float>(2, 2) << 1, 0, 0, -1), 
         (cv::Mat_<float>(2, 2) << 1, 0, 0, -1),
     };
+```
+!["1-testImg.png"](1-testImg.png)
 
-    // Making new imgs by linear filtering testImg
+Функция cv::filter2D используется для применения линейной фильтрации к тестовому изображению с использованием указанных ядер, создавая изображения I1 и I2.
+```
     for (int i = 0; i < 2; i++) {
         cv::filter2D(testImg.clone(), newImgs[i], -1, cores[i]);
 
@@ -54,8 +53,13 @@ int main() {
         cv::minMaxLoc(newImgs[i], &locMin, &locMax);
         newImgs[i] = newImgs[i] * (255 / (locMax - locMin)) + locMax / 2;
     }
+```
+!["2-core1.png"](2-core1.png)
 
-    // Making special img3 = (img1 ^ 2 + img2 ^ 2) ^ 0.5
+!["3-core2.png"](3-core2.png)
+
+Изображение I3 вычисляется как sqrt(I1^ 2 + I2^2).
+```
     newImgs.push_back(testImg.clone());
     for (int i = 0; i < testImg.rows; i++) {
         for (int j = 0; j < testImg.cols; j++) {
@@ -64,8 +68,11 @@ int main() {
             );
         }
     }
+```
+!["4-core3.png"](4-core3.png)
 
-    // Convering imgs of type <Mat1f> to <Mat1b>
+Изображения I1, I2 и I3 объединяются в RGB-изображение для визуализации, где каждое изображение помещается в отдельный канал.
+```
     cv::Mat rgbResult;
     std::vector<cv::Mat1b> channels(3);
     std::string exportpath = "../export/lab05/";
@@ -76,24 +83,5 @@ int main() {
         ); // Saving transformed imgs in cycle
     }
     cv::merge(channels, rgbResult);
-
-    // Saving and displaying test and result imgs
-    cv::imshow("testImg", cv::Mat1b(testImg));
-    cv::imwrite(exportpath + "1-testImg.png", testImg);
-    cv::waitKey(0);
-    cv::imshow("rgbResult", rgbResult);
-    cv::imwrite(exportpath + "5-rgbResult.png", rgbResult);
-    cv::waitKey(0);
-}
 ```
-## Results:
-!["1-testImg.png"](1-testImg.png)
-
-!["2-core1.png"](2-core1.png)
-
-!["3-core2.png"](3-core2.png)
-
-!["4-core3.png"](4-core3.png)
-
 !["5-rgbResult.png"](5-rgbResult.png)
-
