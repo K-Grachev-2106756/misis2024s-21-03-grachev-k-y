@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
     std::filesystem::path directory = path.parent_path();
 
     if (mode == "HSV" || mode == "") {
-        detectBGR(originalImg, detImg);
+        detectHSV(originalImg, detImg);
         std::filesystem::path newFilePath = directory / "HSV.png";
         cv::imwrite(newFilePath.string(), drawContoursRed(detImg));
         
